@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Owner Dashboard - LashBar</title>
+    <style>
+        * { box-sizing: border-box; }
+        body { font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif; background-color: #fcf9fa; margin: 0; padding: 20px; height: 100vh; display: flex; flex-direction: column; overflow: hidden; color: #2c2c2c; }
+        
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-shrink: 0; }
+        .btn-group { display: flex; gap: 12px; }
+        
+        .add-btn { background-color: #2c2c2c; color: white; padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; transition: 0.2s; font-weight: 600; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .add-btn:hover { background-color: #d4af37; transform: translateY(-1px); }
+        .team-btn { background-color: #fff; color: #2c2c2c; border: 1px solid #ddd; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: 600; transition: 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+        .team-btn:hover { background-color: #f5f5f5; border-color: #bbb; }
+
+        .calendar-container { background: white; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.04); border: 1px solid #f0f0f0; overflow-x: auto; flex-grow: 1; display: flex; flex-direction: column; }
+        
+        .grid-header { display: grid; text-align: center; font-weight: 600; padding: 15px 0 10px 0; border-bottom: 2px solid #eaeaea; min-width: 800px; flex-shrink: 0; background-color: #fafafa; border-radius: 12px 12px 0 0; color: #555; }
+        .schedule-grid { display: grid; grid-template-rows: repeat(22, 1fr); gap: 0; position: relative; min-width: 800px; flex-grow: 1; padding-bottom: 10px; }
+
+        .time-label { text-align: right; padding-right: 24px; font-size: 0.75rem; color: #999; font-weight: 500; position: relative; top: -8px; }
+        .grid-cell { border-bottom: 1px solid #f2f2f2; border-right: 1px solid #f2f2f2; }
+
+        .block { border-radius: 6px; padding: 6px 10px; font-size: 0.8rem; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.04); margin: 2px 4px; z-index: 10; cursor: pointer; display: flex; flex-direction: column; justify-content: center; line-height: 1.3; transition: all 0.15s ease; border: 1px solid transparent; }
+        .block:hover { transform: translateY(-2px); box-shadow: 0 4px 10px rgba(0,0,0,0.1); filter: brightness(0.98); } 
+        
+        .block.appointment { background-color: #fff4f5; border-left: 4px solid #e5a9b4; border-color: #ffe0e4; color: #5a353d; }
+        .block.break { background-color: #f0f9ff; border-left: 4px solid #7dd3fc; border-color: #e0f2fe; color: #0369a1; text-align: center; align-items: center; font-style: normal; font-weight: 500; }
+        .block strong { font-weight: 600; margin-bottom: 2px; font-size: 0.85rem;}
+
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); backdrop-filter: blur(2px); justify-content: center; align-items: center; z-index: 100; }
+        .modal-content { background: white; padding: 30px; border-radius: 16px; width: 100%; max-width: 400px; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 40px rgba(0,0,0,0.15); }
+        form label { display: block; margin-top: 12px; font-size: 0.85rem; font-weight: 500; color: #555; }
+        form input, form select { width: 100%; padding: 10px; margin-top: 4px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-family: inherit; }
+        form input:focus, form select:focus { outline: none; border-color: #d4af37; box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.1); }
+        
+        .btn-save { width: 100%; background-color: #d4af37; color: white; padding: 12px; border: none; border-radius: 8px; margin-top: 20px; cursor: pointer; font-weight: bold; transition: 0.2s;}
+        .btn-save:hover { background-color: #c4a133; }
+        .btn-cancel { width: 100%; background-color: #f5f5f5; color: #333; padding: 12px; border: none; border-radius: 8px; margin-top: 10px; cursor: pointer; font-weight: bold; transition: 0.2s;}
+        .btn-cancel:hover { background-color: #e5e5e5; }
+        .btn-delete { width: 100%; background-color: #fff0f0; color: #e63946; padding: 12px; border: 1px solid #ffccd0; border-radius: 8px; margin-top: 10px; cursor: pointer; display: none; font-weight: bold; transition: 0.2s;}
+        .btn-delete:hover { background-color: #ffe0e3; }
+        
+        .worker-item { display: flex; justify-content: space-between; padding: 12px 10px; border-bottom: 1px solid #eee; align-items: center; font-weight: 500;}
+        .worker-item button { background: #fff0f0; color: #e63946; border: 1px solid #ffccd0; border-radius: 6px; cursor: pointer; padding: 6px 12px; font-weight: bold; transition: 0.2s;}
+        .worker-item button:hover { background: #ffe0e3; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>👑 LashBar</h1>
+        <div class="btn-group">
+            <button class="team-btn" onclick="openTeamModal()">Manage Team</button>
+            <button class="add-btn" onclick="openAddModal()">+ Add Event</button>
+        </div>
+    </div>
+
+    <div class="calendar-container">
+        <div class="grid-header" id="grid-header"></div>
+        <div class="schedule-grid" id="grid-body"></div>
+    </div>
+
+    <div class="modal-overlay" id="eventModal">
+        <div class="modal-content">
+            <h2 id="modal-title" style="margin-top:0;">Add to Schedule</h2>
+            <form id="add-event-form">
+                <label>Type of Event:</label>
+                <select id="type">
+                    <option value="appointment">Customer Appointment</option>
+                    <option value="break">Worker Break / Pause</option>
+                </select>
+                
+                <label>Customer/Event Name:</label>
+                <input type="text" id="customer" required>
+
+                <label>Contact (Email or Phone):</label>
+                <input type="text" id="contact" placeholder="customer@email.com">
+
+                <label>Date:</label>
+                <input type="date" id="date" required>
+                
+                <label>Start Time (09:00 - 19:30):</label>
+                <input type="time" id="time" step="1800" required>
+                
+                <label>Duration:</label>
+                <select id="duration">
+                    <option value="30">30 Minutes</option>
+                    <option value="60">60 Minutes</option>
+                    <option value="90">90 Minutes</option>
+                    <option value="120">120 Minutes</option>
+                </select>
+                
+                <label>Service (Skip if Break):</label>
+                <select id="service">
+                    <option value="Classic Set">Classic Set</option>
+                    <option value="Volume Lashes">Volume Lashes</option>
+                    <option value="Lash Removal">Lash Removal</option>
+                    <option value="None">None (Break)</option>
+                </select>
+                
+                <label>Worker:</label>
+                <select id="worker"></select>
+
+                <button type="submit" class="btn-save">Save Schedule</button>
+                <button type="button" class="btn-delete" id="delete-btn" onclick="deleteEvent()">Cancel Appointment</button>
+                <button type="button" class="btn-cancel" onclick="closeModal('eventModal')">Close</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="teamModal">
+        <div class="modal-content">
+            <h2 style="margin-top:0;">Manage Team</h2>
+            <div id="worker-list" style="margin-bottom: 20px;"></div>
+            
+            <form id="add-worker-form" style="border-top: 2px solid #eee; padding-top: 15px;">
+                <label>Hire New Worker:</label>
+                <input type="text" id="new-worker-name" placeholder="Worker Name" required>
+                <button type="submit" class="btn-save" style="margin-top: 10px;">Add Worker</button>
+            </form>
+            <button type="button" class="btn-cancel" onclick="closeModal('teamModal')">Close</button>
+        </div>
+    </div>
+
+    <script>
+        let currentEditId = null;
+        let globalWorkers = [];
+
+        function timeToRow(timeStr) {
+            const [hours, minutes] = timeStr.split(':').map(Number);
+            return (((hours * 60 + minutes) - 540) / 30) + 1; 
+        }
+
+        function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+
+        async function loadEverything() {
+            const workerRes = await fetch('/api/workers');
+            globalWorkers = await workerRes.json();
+
+            const columnsTemplate = `80px repeat(${globalWorkers.length}, 1fr)`;
+            const gridHeader = document.getElementById('grid-header');
+            const gridBody = document.getElementById('grid-body');
+            
+            gridHeader.style.gridTemplateColumns = columnsTemplate;
+            gridBody.style.gridTemplateColumns = columnsTemplate;
+
+            gridHeader.innerHTML = '<div>Time</div>';
+            globalWorkers.forEach(w => {
+                gridHeader.innerHTML += `<div>${w.name}</div>`;
+            });
+
+            const workerDropdown = document.getElementById('worker');
+            workerDropdown.innerHTML = '';
+            globalWorkers.forEach(w => {
+                workerDropdown.innerHTML += `<option value="${w.name}">${w.name}</option>`;
+            });
+
+            gridBody.innerHTML = ''; 
+            const times = ["9:00", "9:30", "10:00", "10:30", "11:00", "11:30", "12:00", "12:30", "13:00", "13:30", "14:00", "14:30", "15:00", "15:30", "16:00", "16:30", "17:00", "17:30", "18:00", "18:30", "19:00", "19:30"];
+            for (let i = 0; i < 22; i++) {
+                gridBody.innerHTML += `<div class="time-label" style="grid-column: 1; grid-row: ${i+1}">${times[i]}</div>`;
+                for(let col = 2; col <= globalWorkers.length + 1; col++) {
+                    gridBody.innerHTML += `<div class="grid-cell" style="grid-column: ${col}; grid-row: ${i+1}"></div>`;
+                }
+            }
+
+            const apptRes = await fetch('/api/appointments');
+            const appointments = await apptRes.json();
+
+            appointments.forEach(appt => {
+                const workerIndex = globalWorkers.findIndex(w => w.name === appt.worker);
+                if (workerIndex === -1) return; 
+                const col = workerIndex + 2; 
+
+                const block = document.createElement('div');
+                block.className = `block ${appt.type}`; 
+                block.style.gridColumn = col;
+                block.style.gridRow = `${timeToRow(appt.time)} / span ${appt.duration / 30}`;
+                block.innerHTML = appt.type === "break" ? `☕ ${appt.customer}` : `<strong>${appt.customer}</strong><br>${appt.service}`;
+                block.onclick = () => openEditModal(appt);
+                gridBody.appendChild(block);
+            });
+        }
+
+        window.onload = loadEverything;
+
+        // --- TEAM MANAGEMENT LOGIC ---
+        function openTeamModal() {
+            const list = document.getElementById('worker-list');
+            list.innerHTML = '';
+            globalWorkers.forEach(w => {
+                list.innerHTML += `
+                    <div class="worker-item">
+                        <span>${w.name}</span>
+                        <button onclick="deleteWorker(${w.id})">Remove</button>
+                    </div>`;
+            });
+            document.getElementById('teamModal').style.display = 'flex';
+        }
+
+        document.getElementById('add-worker-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await fetch('/api/workers', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: document.getElementById('new-worker-name').value })
+            });
+            document.getElementById('new-worker-name').value = '';
+            await loadEverything();
+            openTeamModal(); 
+        });
+
+        async function deleteWorker(id) {
+            if(confirm("Remove this worker from the schedule?")) {
+                await fetch(`/api/workers/${id}`, { method: 'DELETE' });
+                await loadEverything();
+                openTeamModal(); 
+            }
+        }
+
+        // --- EVENT LOGIC ---
+        function openAddModal() {
+            currentEditId = null; 
+            document.getElementById('modal-title').innerText = "Add to Schedule";
+            document.getElementById('add-event-form').reset(); 
+            document.getElementById('delete-btn').style.display = 'none'; 
+            document.getElementById('eventModal').style.display = 'flex';
+        }
+
+        function openEditModal(appt) {
+            currentEditId = appt.id; 
+            document.getElementById('modal-title').innerText = "Edit Schedule";
+            document.getElementById('type').value = appt.type;
+            document.getElementById('customer').value = appt.customer;
+            document.getElementById('contact').value = appt.contact || '';
+            document.getElementById('date').value = appt.date;
+            document.getElementById('time').value = appt.time;
+            document.getElementById('duration').value = appt.duration;
+            document.getElementById('service').value = appt.service;
+            document.getElementById('worker').value = appt.worker;
+            document.getElementById('delete-btn').style.display = 'block'; 
+            document.getElementById('eventModal').style.display = 'flex';
+        }
+
+        document.getElementById('add-event-form').addEventListener('submit', async function(e) {
+            e.preventDefault(); 
+            const data = {
+                type: document.getElementById('type').value,
+                customer: document.getElementById('customer').value,
+                contact: document.getElementById('contact').value,
+                date: document.getElementById('date').value,
+                time: document.getElementById('time').value,
+                duration: document.getElementById('duration').value,
+                service: document.getElementById('service').value,
+                worker: document.getElementById('worker').value
+            };
+
+            if (currentEditId) {
+                await fetch(`/api/appointments/${currentEditId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+            } else {
+                await fetch('/api/book', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+            }
+            closeModal('eventModal');
+            loadEverything(); 
+        });
+
+        async function deleteEvent() {
+            if(confirm("Cancel this appointment?")) {
+                await fetch(`/api/appointments/${currentEditId}`, { method: 'DELETE' });
+                closeModal('eventModal');
+                loadEverything(); 
+            }
+        }
+    </script>
+</body>
+</html>

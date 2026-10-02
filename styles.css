@@ -1,0 +1,114 @@
+/* Reset basic margins and set a nice font */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    background-color: #fdf6f7; /* Very soft pink/cream background */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    color: #333;
+}
+
+/* The main login container */
+.loginbox {
+    background-color: #ffffff;
+    padding: 40px;
+    border-radius: 10px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+    width: 100%;
+    max-width: 350px;
+    text-align: center;
+}
+
+.loginbox h2 {
+    margin-bottom: 20px;
+    color: #d4af37; /* Elegant gold accent */
+    font-weight: 600;
+}
+
+/* Form element styling */
+form {
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+}
+
+label {
+    font-size: 0.9rem;
+    margin-bottom: 5px;
+    color: #555;
+}
+
+input {
+    padding: 10px;
+    margin-bottom: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 1rem;
+}
+
+input:focus {
+    outline: none;
+    border-color: #d4af37;
+}
+
+button {
+    background-color: #333;
+    width: 100%; /* I changed this back to 100% so it fits the form nicely! */
+    color: white;
+    padding: 12px;
+    border: none;
+    border-radius: 5px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+button:hover {
+    background-color: #d4af37;
+}
+
+/* Footer styling */
+#footer {
+    margin-top: 30px;
+    font-size: 0.8rem;
+    color: #888;
+}
+
+/* --- CALENDAR STYLES --- */
+
+.calendar-container { 
+    background: white; 
+    border-radius: 8px; 
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05); 
+    padding: 20px;
+    /* Allows horizontal scrolling  */
+    overflow-x: auto; 
+}
+
+.grid-header { 
+    display: grid; 
+    grid-template-columns: 60px 1fr 1fr 1fr; 
+    text-align: center; 
+    font-weight: bold; 
+    padding-bottom: 10px; 
+    border-bottom: 2px solid #eee; 
+    margin-bottom: 10px;
+    /* Forces the grid to stay wide so it doesn't squish */
+    min-width: 600px; 
+}
+
+.schedule-grid { 
+    display: grid; 
+    /* Changed from 16 to 22 rows! */
+    grid-template-rows: repeat(22, 1fr); 
+    gap: 2px; position: relative; min-width: 600px; 
+    flex-grow: 1; 
+}
