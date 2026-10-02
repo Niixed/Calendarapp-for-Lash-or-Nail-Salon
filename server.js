@@ -39,7 +39,7 @@ function sendNotification(contact, subject, message) {
 
     // Package the email up
     const mailOptions = {
-        from: 'nikodang98@gmail.com', // ⬅️ Put your email here again
+        from: '', // ⬅️ Put your email here again
         to: contact,                  // The customer's email from the form
         subject: subject,
         text: message
